@@ -88,7 +88,7 @@ def xml_deepcopy(target_doc, target_node, source_node):
             new_target_node = target_node.appendChild(element_node)
 
             if source_child.hasChildNodes():
-                target_doc = add_children(target_doc,
+                target_doc = xml_deepcopy(target_doc,
                                           new_target_node,
                                           source_child)
 
