@@ -7,7 +7,7 @@ A minidom based xml copy utility.
 
 The function xml_deepcopy() adds the root node of the source document
 to the target document and then calls calls child_xml_deepcopy()
-on the root node..
+on the source document root node.
 
 The function child_xml_deepcopy() copies all child nodes and attributes
 starting at source_node to a target_node in target_doc.
