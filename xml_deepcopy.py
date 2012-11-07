@@ -18,7 +18,7 @@ Run xml_deepcopy.py to run xml_deepcopy() example.
 from xml.parsers.expat import ExpatError
 from xml.dom.minidom import parseString
 
-#=============================================
+#==============================================
 
 
 def child_xml_deepcopy(target_doc, target_node, source_node):
