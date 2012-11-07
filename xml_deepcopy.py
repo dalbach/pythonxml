@@ -5,12 +5,12 @@ xml_deepcopy.py
 
 A minidom based xml copy utility.
 
-The function xml_deepcopy() copies all nodes and attributes
-from source_node to target_node in target_doc.
+The function xml_deepcopy() copies all child nodes and attributes
+starting at source_node to a target_node in target_doc.
 
 The function add_xmlstr2doc() is an example of using xml_deepcopy().
 
-Run xml_deepcopy.py to run add_xmlstr2doc()
+Run xml_deepcopy.py to run add_xmlstr2doc() example.
 """
 
 from xml.parsers.expat import ExpatError
@@ -27,7 +27,7 @@ def xml_deepcopy(target_doc, target_node, source_node):
       Recursively add source_node and all children to 
       target doc at target node.
 
-      Returns new target_doc.
+      Returns nothing.
       Caller needs to catch ExpatError.
     """
 
@@ -66,11 +66,9 @@ def xml_deepcopy(target_doc, target_node, source_node):
 
             # Recursively process any children.
             if source_child.hasChildNodes():
-                target_doc = xml_deepcopy(target_doc,
-                                          new_target_node,
-                                          source_child)
+                xml_deepcopy(target_doc, new_target_node, source_child)
 
-    return target_doc
+    return
 
 
 #=============================================
@@ -81,16 +79,17 @@ def add_xmlstr2doc(source_xml_str, target_doc):
     """
     add_xmlstr2doc()
 
-      Add a xml fragment into a target xml document.
+      Add an xml fragment into a target xml document.
 
-      Returns new target_doc.
-      Caller needs to catch ExpatError.
+      Returns nothing.
+      Caller needs to catch ExpatError, TypeError.
     """
 
 
     # Build the source document from the xml string.
     source_doc = parseString(source_xml_str)
-    # Get the source document root node
+
+    # Get the source document root node.
     source_node = source_doc.firstChild
     source_nodename = source_node.nodeName
 
@@ -99,12 +98,10 @@ def add_xmlstr2doc(source_xml_str, target_doc):
     target_node = target_doc.lastChild.appendChild(element_node)
 
     # Recursively process the source nodes by adding to target document.
-    target_doc = xml_deepcopy(target_doc,
-                              target_node,
-                              source_node)
+    xml_deepcopy(source_doc, target_node, source_node)
 
 
-    return target_doc
+    return
 
 
 #=============================================
@@ -126,12 +123,12 @@ if __name__ == "__main__":
     # Add source xml to target xml.
     try:
         # create a target DOM tree from target_xml
-        s_doc = parseString(target_xml)
+        doc = parseString(target_xml)
 
         # Add the source_xml to the target_doc.
-        target_doc = add_xmlstr2doc(source_xml, s_doc)
+        add_xmlstr2doc(source_xml, doc)
 
-        print 'combined xml %s' % target_doc.toxml()
+        print 'combined xml %s' % doc.toxml()
 
     except ExpatError, exerr:
         print 'ExpatError: %s' % exerr
