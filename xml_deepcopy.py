@@ -3,6 +3,7 @@
 """
 xml_deepcopy.py
 
+A minidom based xml copy utility.
 
 The function xml_deepcopy() copies all nodes and attributes
 from source_node to target_node in target_doc.
