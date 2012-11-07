@@ -1,11 +1,76 @@
 #!/usr/bin/env python
 
 """
-addxml.py
+xml_deepcopy.py
+
+
+The function xml_deepcopy() copies all nodes and attributes
+from source_node to target_node in target_doc.
+
+The function add_xmlstr2doc() is an example of using xml_deepcopy().
+
+Run xml_deepcopy.py to run add_xmlstr2doc()
 """
 
 from xml.parsers.expat import ExpatError
 from xml.dom.minidom import parseString
+
+
+#=============================================
+
+
+def xml_deepcopy(target_doc, target_node, source_node):
+
+    """
+    xml_deepcopy()
+
+      Recursively add source_node and all children to 
+      target doc at target node.
+
+      Returns new target_doc.
+      Caller needs to catch ExpatError.
+    """
+
+
+    # Copy any attributes for the source node to the target node.
+    if source_node.hasAttributes():
+        attrs = source_node.attributes
+        for key in attrs.keys():
+            target_node.setAttribute(attrs[key].name, attrs[key].value)
+
+
+    source_children = source_node.childNodes
+    for source_child in source_children:
+
+        source_child_nodetype = source_child.nodeType
+
+        # Could be TEXT/CDATA or could be an ELEMENT.
+        if source_child_nodetype == source_child.TEXT_NODE:
+            # TEXT
+            nodevalue = source_child.nodeValue
+            node_text = target_doc.createTextNode(nodevalue)
+            target_node.appendChild(node_text)
+
+        elif source_child_nodetype == source_child.CDATA_SECTION_NODE:
+            # CDATA
+            nodevalue = source_child.nodeValue
+            node_text = target_doc.createCDATASection(nodevalue)
+            target_node.appendChild(node_text)
+
+        else:
+            # ELEMENT
+            source_child_nodename = source_child.nodeName
+
+            element_node = target_doc.createElement(source_child_nodename)
+            new_target_node = target_node.appendChild(element_node)
+
+            # Recursively process any children.
+            if source_child.hasChildNodes():
+                target_doc = xml_deepcopy(target_doc,
+                                          new_target_node,
+                                          source_child)
+
+    return target_doc
 
 
 #=============================================
@@ -16,7 +81,7 @@ def add_xmlstr2doc(source_xml_str, target_doc):
     """
     add_xmlstr2doc()
 
-      Add an xml string into a target xml document.
+      Add a xml fragment into a target xml document.
 
       Returns new target_doc.
       Caller needs to catch ExpatError.
@@ -42,65 +107,11 @@ def add_xmlstr2doc(source_xml_str, target_doc):
     return target_doc
 
 
-#=================
-
-
-def xml_deepcopy(target_doc, target_node, source_node):
-
-    """
-    xml_deepcopy()
-      Recursively add source_node and all children to target doc at target node.
-      Returns new target_doc.
-      Caller needs to catch ExpatError.
-    """
-
-
-    # Copy any attributes for the source node to the target node.
-    if source_node.hasAttributes():
-        attrs = source_node.attributes
-        for key in attrs.keys():
-            target_node.setAttribute(attrs[key].name, attrs[key].value)
-
-    # Could be text/cdata or could be a nested element.
-
-    source_children = source_node.childNodes
-    for source_child in source_children:
-
-        source_child_nodetype = source_child.nodeType
-
-        if source_child_nodetype == source_child.TEXT_NODE:
-            # TEXT
-            nodevalue = source_child.nodeValue
-            node_text = target_doc.createTextNode(nodevalue)
-            target_node.appendChild(node_text)
-
-        elif source_child_nodetype == source_child.CDATA_SECTION_NODE:
-            # CDATA
-            nodevalue = source_child.nodeValue
-            node_text = target_doc.createCDATASection(nodevalue)
-            target_node.appendChild(node_text)
-
-        else:
-            # ELEMENT
-            source_child_nodename = source_child.nodeName
-
-            element_node = target_doc.createElement(source_child_nodename)
-            new_target_node = target_node.appendChild(element_node)
-
-            if source_child.hasChildNodes():
-                target_doc = xml_deepcopy(target_doc,
-                                          new_target_node,
-                                          source_child)
-
-    return target_doc
-
-
-#==============================
+#=============================================
 
 
 if __name__ == "__main__":
 
-    # create a DOM tree from event_xml
     target_xml = """
     <target_xml><message_list><message_type>email</message_type><pager_id>EMAIL0</pager_id><text_message>BOOKED EMAIL DISPATCHED</text_message><message_address>someone@somewhere.com</message_address><report_id>0000</report_id><message_type>email</message_type><pager_id>EMAIL1</pager_id><text_message>BOOKED EMAIL DISPATCHED</text_message><message_address>someone@somewhere.com</message_address><report_id>0001</report_id></message_list></target_xml>
             """
@@ -114,9 +125,13 @@ if __name__ == "__main__":
 
     # Add source xml to target xml.
     try:
+        # create a target DOM tree from target_xml
         s_doc = parseString(target_xml)
-        new_doc = add_xmlstr2doc(source_xml, s_doc)
-        print 'combined xml %s' % new_doc.toxml()
+
+        # Add the source_xml to the target_doc.
+        target_doc = add_xmlstr2doc(source_xml, s_doc)
+
+        print 'combined xml %s' % target_doc.toxml()
 
     except ExpatError, exerr:
         print 'ExpatError: %s' % exerr
