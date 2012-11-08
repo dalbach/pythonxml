@@ -51,14 +51,25 @@ def child_xml_deepcopy(target_doc, target_node, source_node):
         if source_child_nodetype == source_child.TEXT_NODE:
             # TEXT
             nodevalue = source_child.nodeValue
-            node_text = target_doc.createTextNode(nodevalue)
-            target_node.appendChild(node_text)
+            node = target_doc.createTextNode(nodevalue)
+            target_node.appendChild(node)
 
         elif source_child_nodetype == source_child.CDATA_SECTION_NODE:
             # CDATA
             nodevalue = source_child.nodeValue
-            node_text = target_doc.createCDATASection(nodevalue)
-            target_node.appendChild(node_text)
+            node = target_doc.createCDATASection(nodevalue)
+            target_node.appendChild(node)
+
+        elif source_child_nodetype == source_child.PROCESSING_INSTRUCTION_NODE:
+            # PROCESSING INSTRUCTION
+            node = target_doc.createProcessingInstruction(source_child.target, 
+                                                          source_child.data)
+            target_node.appendChild(node)
+
+        elif source_child_nodetype == source_child.COMMENT_NODE:
+            # COMMENT
+            node = target_doc.createComment(source_child.data)
+            target_node.appendChild(node)
 
         else:
             # ELEMENT
